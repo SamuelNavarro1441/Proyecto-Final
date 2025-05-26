@@ -10,6 +10,7 @@ void almacenar();
 void consultar();
 void modificar();
 void eliminar();
+void promedio();
 
 // Estructura para almacenar los datos de un estudiante
 struct Estudiante
@@ -21,7 +22,8 @@ struct Estudiante
 
 int main()
 {
-    menu(); // Inicia el menu principal
+    menu();    // Inicia el menu principal
+    cin.get(); // Espera a un enter para terminar la ejecucion
     return 0;
 }
 
@@ -37,7 +39,8 @@ void menu()
         cout << "2. Consultar Estudiante" << endl;
         cout << "3. Modificar Estudiante" << endl;
         cout << "4. Eliminar Estudiante" << endl;
-        cout << "5. Salir" << endl;
+        cout << "5. Calcular Promedio General" << endl;
+        cout << "6. Salir" << endl;
         cout << "Opcion: ";
         getline(cin, entrada);
 
@@ -48,11 +51,11 @@ void menu()
         }
         catch (...)
         {
-            cout << "Entrada no valida. Por favor, ingrese un numero entre 1 y 5." << endl;
+            cout << "Entrada no valida. Por favor, ingrese un numero entre 1 y 6." << endl;
             continue;
         }
 
-        if (opcion < 1 || opcion > 5)
+        if (opcion < 1 || opcion > 6)
         {
             cout << "Opcion no valida, intente de nuevo." << endl;
             continue;
@@ -72,10 +75,120 @@ void menu()
             eliminar();
             break;
         case 5:
-            cout << "\nCerrando programa\n";
+            promedio();
+            break;
+        case 6:
+            cout << "\nPresione enter para terminar la ejecucion\n";
             break;
         }
-    } while (opcion != 5);
+    } while (opcion != 6);
+}
+
+void almacenar()
+{
+    int n = 0;
+    char rpt;
+    int ultimoID = 0;
+
+    // Lee los estudiantes actuales del archivo (si existen)
+    ifstream archivoLectura("Proyecto.txt");
+    if (!archivoLectura.fail())
+    {
+        string linea;
+        getline(archivoLectura, linea); // Salta la primera linea (promedio general)
+        while (n < 100 && archivoLectura >> estudiantes[n].id)
+        {
+            archivoLectura >> ws;
+            getline(archivoLectura, estudiantes[n].nombre, '\t');
+            archivoLectura >> estudiantes[n].promedio;
+            archivoLectura.ignore();
+            ultimoID = estudiantes[n].id;
+            n++;
+        }
+        archivoLectura.close();
+    }
+
+    do
+    {
+        estudiantes[n].id = n + 1; // ID consecutivo desde 1
+
+        cout << "\nID asignado al estudiante: " << estudiantes[n].id << endl;
+
+        cout << "Digite su nombre: ";
+        getline(cin >> ws, estudiantes[n].nombre); // Lee el nombre correctamente
+
+        // Validacion de promedio
+        string entradaPromedio;
+        double promedio;
+        while (true)
+        {
+            cout << "Digite su promedio (0.0 - 10.0): ";
+            getline(cin, entradaPromedio);
+            try
+            {
+                promedio = stod(entradaPromedio);
+                // Valida el rango del promedio
+                if (promedio >= 0.0 && promedio <= 10.0)
+                {
+                    estudiantes[n].promedio = promedio;
+                    break;
+                }
+                else
+                {
+                    cout << "El promedio debe estar entre 0.0 y 10.0." << endl;
+                }
+            }
+            catch (...)
+            {
+                cout << "Entrada no valida. Ingrese un numero valido para el promedio." << endl;
+            }
+        }
+
+        n++;
+        ultimoID++;
+
+        cout << "\nDesea agregar otro estudiante (S/N): ";
+        cin >> rpt;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    } while ((rpt == 'S' || rpt == 's') && n < 100);
+
+    // Ordena los estudiantes por promedio de mayor a menor
+    for (int i = 0; i < n - 1; i++)
+    {
+        int max = i;
+        for (int j = i + 1; j < n; j++)
+        {
+            if (estudiantes[j].promedio > estudiantes[max].promedio)
+            {
+                max = j;
+            }
+        }
+        if (max != i)
+        {
+            Estudiante temp = estudiantes[i];
+            estudiantes[i] = estudiantes[max];
+            estudiantes[max] = temp;
+        }
+    }
+
+    // Guarda los estudiantes ordenados en el archivo (sobrescribe)
+    ofstream archivo("Proyecto.txt", ios::out);
+    if (archivo.fail())
+    {
+        cout << "Error con el archivo";
+        exit(1);
+    }
+
+    // Escribe el promedio general anterior si existia, o una linea vacia
+    archivo << "Promedio general: " << endl;
+
+    for (int i = 0; i < n; i++)
+    {
+        archivo << estudiantes[i].id << "\t" << estudiantes[i].nombre << "\t" << estudiantes[i].promedio << endl;
+    }
+
+    archivo.close();
+    cout << "Estudiantes almacenados y ordenados por promedio correctamente." << endl;
 }
 
 void consultar()
@@ -86,6 +199,9 @@ void consultar()
         cout << "Error con el archivo";
         return;
     }
+
+    string linea;
+    getline(archivo, linea); // Salta la primera linea (promedio general)
 
     int opcion;
     cout << "Que desea consultar?\n1. Todos los estudiantes\n2. Un estudiante por ID\nOpcion: ";
@@ -168,6 +284,10 @@ void modificar()
             cout << "Error con el archivo";
             return;
         }
+
+        string linea;
+        getline(archivo, linea); // Salta la primera linea (promedio general)
+        temp << linea << endl;   // Mantiene la primera linea en el archivo temporal
 
         cout << "Digite el ID del estudiante a modificar: ";
         // Valida que el ID sea un numero
@@ -261,108 +381,6 @@ void modificar()
     } while (rpt == 'S' || rpt == 's');
 }
 
-void almacenar()
-{
-    int n = 0;
-    char rpt;
-    int ultimoID = 0;
-
-    // Lee los estudiantes actuales del archivo (si existen)
-    ifstream archivoLectura("Proyecto.txt");
-    if (!archivoLectura.fail())
-    {
-        while (n < 100 && archivoLectura >> estudiantes[n].id)
-        {
-            archivoLectura >> ws;
-            getline(archivoLectura, estudiantes[n].nombre, '\t');
-            archivoLectura >> estudiantes[n].promedio;
-            archivoLectura.ignore();
-            ultimoID = estudiantes[n].id;
-            n++;
-        }
-        archivoLectura.close();
-    }
-
-    do
-    {
-        estudiantes[n].id = n + 1; // ID consecutivo desde 1
-
-        cout << "\nID asignado al estudiante: " << estudiantes[n].id << endl;
-
-        cout << "Digite su nombre: ";
-        getline(cin >> ws, estudiantes[n].nombre); // Lee el nombre correctamente
-
-        // Validacion de promedio
-        string entradaPromedio;
-        double promedio;
-        while (true)
-        {
-            cout << "Digite su promedio (0.0 - 10.0): ";
-            getline(cin, entradaPromedio);
-            try
-            {
-                promedio = stod(entradaPromedio);
-                // Valida el rango del promedio
-                if (promedio >= 0.0 && promedio <= 10.0)
-                {
-                    estudiantes[n].promedio = promedio;
-                    break;
-                }
-                else
-                {
-                    cout << "El promedio debe estar entre 0.0 y 10.0." << endl;
-                }
-            }
-            catch (...)
-            {
-                cout << "Entrada no valida. Ingrese un numero valido para el promedio." << endl;
-            }
-        }
-
-        n++;
-        ultimoID++;
-
-        cout << "\nDesea agregar otro estudiante (S/N): ";
-        cin >> rpt;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    } while ((rpt == 'S' || rpt == 's') && n < 100);
-
-    // Ordena los estudiantes por promedio de mayor a menor
-    for (int i = 0; i < n - 1; i++)
-    {
-        int max = i;
-        for (int j = i + 1; j < n; j++)
-        {
-            if (estudiantes[j].promedio > estudiantes[max].promedio)
-            {
-                max = j;
-            }
-        }
-        if (max != i)
-        {
-            Estudiante temp = estudiantes[i];
-            estudiantes[i] = estudiantes[max];
-            estudiantes[max] = temp;
-        }
-    }
-
-    // Guarda los estudiantes ordenados en el archivo (sobrescribe)
-    ofstream archivo("Proyecto.txt", ios::out);
-    if (archivo.fail())
-    {
-        cout << "Error con el archivo";
-        exit(1);
-    }
-
-    for (int i = 0; i < n; i++)
-    {
-        archivo << estudiantes[i].id << "\t" << estudiantes[i].nombre << "\t" << estudiantes[i].promedio << endl;
-    }
-
-    archivo.close();
-    cout << "Estudiantes almacenados y ordenados por promedio correctamente." << endl;
-}
-
 void eliminar()
 {
     ofstream temp("temp.txt");
@@ -377,6 +395,10 @@ void eliminar()
         cout << "Error con el archivo";
         return;
     }
+
+    string linea;
+    getline(archivo, linea); // Salta la primera linea (promedio general)
+    temp << linea << endl;   // Mantiene la primera linea en el archivo temporal
 
     cout << "Digite el ID del estudiante a eliminar: ";
     // Valida que el ID sea un numero
@@ -415,5 +437,70 @@ void eliminar()
     if (!encontrado)
     {
         cout << "No se encontro un estudiante con ese ID." << endl;
+    }
+}
+
+// Nueva funcion para calcular y actualizar el promedio general
+void promedio()
+{
+    ifstream archivo("Proyecto.txt");
+    if (archivo.fail())
+    {
+        cout << "Error con el archivo" << endl;
+        return;
+    }
+
+    string linea;
+    double suma = 0.0;
+    int contador = 0;
+
+    // Salta la primera linea (puede ser el promedio anterior)
+    getline(archivo, linea);
+
+    // Lee los estudiantes y suma sus promedios
+    while (archivo >> estudiante.id)
+    {
+        archivo >> ws;
+        getline(archivo, estudiante.nombre, '\t');
+        archivo >> estudiante.promedio;
+        archivo.ignore();
+        suma += estudiante.promedio;
+        contador++;
+    }
+    archivo.close();
+
+    if (contador == 0)
+    {
+        cout << "No hay estudiantes registrados para calcular el promedio general." << endl;
+        return;
+    }
+
+    double promedioGeneral = suma / contador;
+    cout.precision(4);
+    cout << "El promedio general de los estudiantes es: " << promedioGeneral << endl;
+
+    // Escribe el promedio general en la primera linea del archivo
+    ifstream archivoLectura("Proyecto.txt");
+    ofstream archivoTemp("temp.txt");
+    if (!archivoLectura.fail() && !archivoTemp.fail())
+    {
+        // Escribe el promedio general en la primera linea
+        archivoTemp << "Promedio general: " << promedioGeneral << endl;
+
+        // Salta la primera linea del archivo original
+        getline(archivoLectura, linea);
+
+        // Copia el resto de los estudiantes
+        while (getline(archivoLectura, linea))
+        {
+            archivoTemp << linea << endl;
+        }
+
+        archivoLectura.close();
+        archivoTemp.close();
+
+        // Reemplaza el archivo original por el temporal
+        remove("Proyecto.txt");
+        rename("temp.txt", "Proyecto.txt");
     }
 }
