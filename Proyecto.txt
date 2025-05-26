@@ -1,0 +1,5 @@
+4	Jose	10
+1	Pedro	7
+2	Maria	5.5
+3	Paco	3.3
+5	Luis	0
