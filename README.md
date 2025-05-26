@@ -9,7 +9,7 @@ Moisés Isaac Bautista Sevilla
 Luis Adelmo Miranda Navarro
 
 
-Descripcion
+Descripcion:
 Este proyecto es un gestor de estudiantes en C++ que permite almacenar, consultar, modificar y eliminar estudiantes en un archivo de texto. Cada estudiante tiene un ID, un nombre y un promedio. El programa usa un menu interactivo en consola.
 
 struct Estudiante
