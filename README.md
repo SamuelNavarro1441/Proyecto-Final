@@ -59,7 +59,8 @@ Ejemplo de uso:
     cout << "2. Consultar Estudiante" << endl;
     cout << "3. Modificar Estudiante" << endl;
     cout << "4. Eliminar Estudiante" << endl;
-    cout << "5. Salir" << endl;
+    cout << "5. Calcular Promedio General" << endl;
+    cout << "6. Salir" << endl;
     cout << "Opcion: ";
     getline(cin, entrada);
 ```
@@ -94,8 +95,12 @@ Pide el ID a eliminar.<br>
 Copia todos los estudiantes menos el eliminado a un archivo temporal.<br>
 Reemplaza el archivo original por el temporal.<br>
 
-Manejo de archivos<br>
+<b>promedio()</b><br>
 
+Permite calcular el promedio general en base a la cantidad de estudiantes ingresados.<br>
+Escribe el promedio general en la primera linea del archivo txt.<br>
+
+Manejo de archivos<br>
 Todos los datos se guardan en Proyecto.txt.<br>
 Para modificar o eliminar, se usa un archivo temporal temp.txt y luego se reemplaza el original.<br>
 
@@ -105,6 +110,11 @@ Validaciones<br>
 Todas las entradas numericas se validan para evitar errores y bucles infinitos.<br>
 El promedio siempre debe estar entre 0.0 y 10.0.<br>
 El ID siempre es un numero entero que se incrementa solo.<br>
+
+<u>Extra</u><br>
+
+Todo el codigo fue autoformateado por el editor de codigo.<br>
+
 
 
 
